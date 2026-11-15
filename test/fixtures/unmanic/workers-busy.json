@@ -1,0 +1,60 @@
+{
+  "workers_status": [
+    {
+      "id": "Default-0",
+      "name": "Default-Worker-1",
+      "idle": false,
+      "paused": false,
+      "start_time": "1794735010.6796997",
+      "current_file": "sample-a.mkv",
+      "current_task": 1,
+      "current_command": "ffmpeg -hide_banner -y -re -i /library/sample-a.mkv -c copy -f matroska /tmp/unmanic/unmanic_file_conversion-mbowr-1794734998/sample-a-mbowr-1794734998-WORKING-1-1.mkv",
+      "worker_log_tail": [
+        "Press [q] to stop, [?] for help\n",
+        "frame=   25 fps=0.0 q=-1.0 size=       1KiB time=00:00:01.02 bitrate=   6.0kbits/s speed=2.04x    \n"
+      ],
+      "runners_info": {
+        "video_transcoder": {
+          "plugin_id": "video_transcoder",
+          "status": "in_progress",
+          "name": "Transcode Video Files",
+          "author": "Josh.5",
+          "version": "0.1.20",
+          "icon": "https://raw.githubusercontent.com/Unmanic/plugin.video_transcoder/master/icon.png",
+          "description": "Transcode the video streams of a video file",
+          "success": false
+        }
+      },
+      "subprocess": {
+        "pid": "162",
+        "percent": "0",
+        "elapsed": 0,
+        "cpu_percent": "0.0",
+        "mem_percent": "0.1844444956308673",
+        "rss_bytes": "30502912",
+        "vms_bytes": "340594688"
+      }
+    },
+    {
+      "id": "Default-1",
+      "name": "Default-Worker-2",
+      "idle": true,
+      "paused": false,
+      "start_time": null,
+      "current_file": "",
+      "current_task": null,
+      "current_command": "",
+      "worker_log_tail": [],
+      "runners_info": {},
+      "subprocess": {
+        "pid": "None",
+        "percent": "0",
+        "elapsed": 0,
+        "cpu_percent": "0",
+        "mem_percent": "0",
+        "rss_bytes": "0",
+        "vms_bytes": "0"
+      }
+    }
+  ]
+}

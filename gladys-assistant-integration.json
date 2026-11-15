@@ -1,177 +1,531 @@
 {
   "manifest_version": 1,
   "type": "device",
-  "name": "Demo Devices Template",
+  "name": "Unmanic",
   "description": {
-    "en": "Starter template showing sensors, a switch, a dimmable light and a smart plug.",
-    "fr": "Template de démarrage : capteurs, interrupteur, lampe variable et prise connectée."
+    "en": "Unmanic in Gladys: transcode queue, workers, progress, failed tasks, pause and resume.",
+    "fr": "Unmanic dans Gladys : file de transcodage, workers, progression, échecs, pause et reprise.",
+    "de": "Unmanic in Gladys: Transcodier-Warteschlange, Worker, Fortschritt, Fehler, Pause.",
+    "es": "Unmanic en Gladys: cola de transcodificación, workers, progreso, fallos, pausa y reanudación."
   },
   "version": "1.0.0",
-  "docker_image": "ghcr.io/gladysassistant/integration-template-js:1.0.0",
+  "docker_image": "ghcr.io/guim31/gladys-unmanic:1.0.0",
   "gladys_version": ">=5.1.0",
-  "cover_image": "https://raw.githubusercontent.com/GladysAssistant/integration-template-js/master/cover.png",
-  "categories": ["lighting", "security", "environment"],
-  "transports": ["local", "cloud"],
+  "cover_image": "https://raw.githubusercontent.com/guim31/gladys-unmanic/main/cover.png",
+  "categories": ["multimedia"],
+  "transports": ["local"],
   "config_schema": [
     {
-      "key": "intro",
+      "key": "server",
       "type": "section",
-      "label": { "en": "Getting started", "fr": "Pour commencer" },
+      "label": {
+        "en": "Unmanic server",
+        "fr": "Serveur Unmanic",
+        "de": "Unmanic-Server",
+        "es": "Servidor Unmanic"
+      },
       "description": {
-        "en": "The demo weather station reads real data from the free Open-Meteo API: pick the coordinates to observe. No account, no API key.",
-        "fr": "La station météo de démonstration lit de vraies données via l'API gratuite Open-Meteo : choisissez les coordonnées à observer. Pas de compte, pas de clé d'API."
+        "en": "Address of the Unmanic web interface. Unmanic has no login of its own: fill in the user name and password only if a reverse proxy with Basic auth protects it.",
+        "fr": "Adresse de l'interface web d'Unmanic. Unmanic n'a pas d'identification : renseignez l'identifiant et le mot de passe seulement si un proxy inverse avec Basic auth le protège.",
+        "de": "Adresse der Unmanic-Weboberfläche. Unmanic hat keine eigene Anmeldung: Benutzername und Passwort nur ausfüllen, wenn ein Reverse-Proxy mit Basic Auth davorsteht.",
+        "es": "Dirección de la interfaz web de Unmanic. Unmanic no tiene inicio de sesión propio: indique usuario y contraseña solo si lo protege un proxy inverso con Basic auth."
       },
       "links": [
         {
-          "url": "https://open-meteo.com/en/docs",
-          "label": { "en": "Open-Meteo documentation", "fr": "Documentation Open-Meteo" }
+          "url": "https://docs.unmanic.app/",
+          "label": {
+            "en": "Unmanic documentation",
+            "fr": "Documentation d'Unmanic",
+            "de": "Unmanic-Dokumentation",
+            "es": "Documentación de Unmanic"
+          }
         }
       ]
     },
     {
-      "key": "latitude",
-      "type": "number",
-      "label": { "en": "Latitude", "fr": "Latitude" },
-      "description": {
-        "en": "Latitude used for the demo weather sensor.",
-        "fr": "Latitude utilisée par le capteur météo de démonstration."
+      "key": "url",
+      "type": "string",
+      "label": {
+        "en": "Address",
+        "fr": "Adresse",
+        "de": "Adresse",
+        "es": "Dirección"
       },
-      "placeholder": { "en": "e.g. 48.8566", "fr": "ex. 48.8566" },
-      "required": true,
-      "default": 48.8566,
-      "min": -90,
-      "max": 90
-    },
-    {
-      "key": "longitude",
-      "type": "number",
-      "label": { "en": "Longitude", "fr": "Longitude" },
       "description": {
-        "en": "Longitude used for the demo weather sensor.",
-        "fr": "Longitude utilisée par le capteur météo de démonstration."
+        "en": "IP address or name of the server, with the port of the web interface (8888 by default).",
+        "fr": "Adresse IP ou nom du serveur, avec le port de l'interface web (8888 par défaut).",
+        "de": "IP-Adresse oder Name des Servers, mit dem Port der Weboberfläche (standardmäßig 8888).",
+        "es": "Dirección IP o nombre del servidor, con el puerto de la interfaz web (8888 por defecto)."
       },
-      "placeholder": { "en": "e.g. 2.3522", "fr": "ex. 2.3522" },
-      "required": true,
-      "default": 2.3522,
-      "min": -180,
-      "max": 180
-    },
-    {
-      "key": "unit",
-      "type": "select",
-      "label": { "en": "Temperature unit", "fr": "Unité de température" },
+      "placeholder": {
+        "en": "e.g. 192.168.1.2:8888",
+        "fr": "ex. 192.168.1.2:8888",
+        "de": "z. B. 192.168.1.2:8888",
+        "es": "p. ej. 192.168.1.2:8888"
+      },
       "required": false,
-      "default": "celsius",
+      "default": ""
+    },
+    {
+      "key": "username",
+      "type": "string",
+      "label": {
+        "en": "User name (reverse proxy)",
+        "fr": "Identifiant (proxy inverse)",
+        "de": "Benutzername (Reverse-Proxy)",
+        "es": "Usuario (proxy inverso)"
+      },
+      "description": {
+        "en": "Only behind a reverse proxy with Basic auth. Leave empty otherwise.",
+        "fr": "Seulement derrière un proxy inverse avec Basic auth. Sinon, laissez vide.",
+        "de": "Nur hinter einem Reverse-Proxy mit Basic Auth. Sonst leer lassen.",
+        "es": "Solo detrás de un proxy inverso con Basic auth. Si no, déjelo vacío."
+      },
+      "required": false,
+      "default": ""
+    },
+    {
+      "key": "password",
+      "type": "secret",
+      "label": {
+        "en": "Password (reverse proxy)",
+        "fr": "Mot de passe (proxy inverse)",
+        "de": "Passwort (Reverse-Proxy)",
+        "es": "Contraseña (proxy inverso)"
+      },
+      "description": {
+        "en": "Password of the reverse proxy, with the user name above.",
+        "fr": "Mot de passe du proxy inverse, avec l'identifiant ci-dessus.",
+        "de": "Passwort des Reverse-Proxys, mit dem Benutzernamen oben.",
+        "es": "Contraseña del proxy inverso, con el usuario de arriba."
+      },
+      "required": false
+    },
+    {
+      "key": "allow_control",
+      "type": "boolean",
+      "label": {
+        "en": "Allow pause and resume",
+        "fr": "Autoriser la pause et la reprise",
+        "de": "Pause und Fortsetzen erlauben",
+        "es": "Permitir pausa y reanudación"
+      },
+      "description": {
+        "en": "Gladys may pause and resume the workers (switches, scenes, widget button). Off: read only.",
+        "fr": "Gladys peut mettre en pause et relancer les workers (interrupteurs, scènes, bouton du widget). Désactivé : lecture seule.",
+        "de": "Gladys darf die Worker pausieren und fortsetzen (Schalter, Szenen, Widget-Taste). Aus: nur lesen.",
+        "es": "Gladys puede pausar y reanudar los workers (interruptores, escenas, botón del widget). Desactivado: solo lectura."
+      },
+      "required": false,
+      "default": false
+    },
+    {
+      "key": "poll_interval",
+      "type": "select",
+      "label": {
+        "en": "Refresh interval",
+        "fr": "Intervalle de rafraîchissement",
+        "de": "Aktualisierungsintervall",
+        "es": "Intervalo de actualización"
+      },
+      "description": {
+        "en": "How often the server is read: queue, workers, completed tasks.",
+        "fr": "Fréquence de lecture du serveur : file, workers, tâches terminées.",
+        "de": "Wie oft der Server gelesen wird: Warteschlange, Worker, abgeschlossene Aufgaben.",
+        "es": "Con qué frecuencia se lee el servidor: cola, workers, tareas completadas."
+      },
+      "required": false,
+      "default": "60",
       "options": [
-        { "value": "celsius", "label": { "en": "Celsius", "fr": "Celsius" } },
-        { "value": "fahrenheit", "label": { "en": "Fahrenheit", "fr": "Fahrenheit" } }
+        {
+          "value": "30",
+          "label": {
+            "en": "30 seconds",
+            "fr": "30 secondes",
+            "de": "30 Sekunden",
+            "es": "30 segundos"
+          }
+        },
+        {
+          "value": "60",
+          "label": {
+            "en": "1 minute",
+            "fr": "1 minute",
+            "de": "1 Minute",
+            "es": "1 minuto"
+          }
+        },
+        {
+          "value": "120",
+          "label": {
+            "en": "2 minutes",
+            "fr": "2 minutes",
+            "de": "2 Minuten",
+            "es": "2 minutos"
+          }
+        },
+        {
+          "value": "300",
+          "label": {
+            "en": "5 minutes",
+            "fr": "5 minutes",
+            "de": "5 Minuten",
+            "es": "5 minutos"
+          }
+        }
       ]
     },
     {
-      "key": "poll_frequency",
-      "type": "number",
-      "label": { "en": "Refresh interval (s)", "fr": "Intervalle de rafraîchissement (s)" },
+      "key": "language",
+      "type": "select",
+      "label": {
+        "en": "Language of the feature names",
+        "fr": "Langue des noms de fonctionnalités",
+        "de": "Sprache der Funktionsnamen",
+        "es": "Idioma de los nombres de funciones"
+      },
       "description": {
-        "en": "How often sensors are polled, in seconds (one minute minimum).",
-        "fr": "Fréquence d'interrogation des capteurs, en secondes (une minute minimum)."
+        "en": "Names given to the features when a device is added, and the sentence of the summary action.",
+        "fr": "Noms donnés aux fonctionnalités à l'ajout d'un appareil, et phrase de l'action de résumé.",
+        "de": "Namen der Funktionen beim Hinzufügen eines Geräts und Satz der Zusammenfassungsaktion.",
+        "es": "Nombres de las funciones al añadir un dispositivo y frase de la acción de resumen."
       },
       "required": false,
-      "default": 300,
-      "min": 60,
-      "max": 3600
+      "default": "fr",
+      "options": [
+        {
+          "value": "en",
+          "label": {
+            "en": "English",
+            "fr": "Anglais",
+            "de": "Englisch",
+            "es": "Inglés"
+          }
+        },
+        {
+          "value": "fr",
+          "label": {
+            "en": "French",
+            "fr": "Français",
+            "de": "Französisch",
+            "es": "Francés"
+          }
+        },
+        {
+          "value": "de",
+          "label": {
+            "en": "German",
+            "fr": "Allemand",
+            "de": "Deutsch",
+            "es": "Alemán"
+          }
+        },
+        {
+          "value": "es",
+          "label": {
+            "en": "Spanish",
+            "fr": "Espagnol",
+            "de": "Spanisch",
+            "es": "Español"
+          }
+        }
+      ]
     }
   ],
   "actions": [
     {
-      "key": "test_weather",
-      "label": { "en": "Test the weather provider", "fr": "Tester le fournisseur météo" },
+      "key": "test_connection",
+      "label": {
+        "en": "Test the connection",
+        "fr": "Tester la connexion",
+        "de": "Verbindung testen",
+        "es": "Probar la conexión"
+      },
+      "description": {
+        "en": "Reads the Unmanic server now and reports what it finds.",
+        "fr": "Lit le serveur Unmanic maintenant et indique ce qu'il trouve.",
+        "de": "Liest den Unmanic-Server sofort und meldet, was er findet.",
+        "es": "Lee el servidor Unmanic ahora e indica lo que encuentra."
+      },
       "timeout_seconds": 30
-    },
-    {
-      "key": "identify",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "fields": [
-        {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
-        }
-      ]
     }
   ],
   "scene_triggers": [
     {
-      "key": "motion_detected",
-      "label": { "en": "Motion detected", "fr": "Mouvement détecté" },
-      "description": {
-        "en": "A demo motion sensor saw a person or an animal move.",
-        "fr": "Un détecteur de démonstration a vu bouger une personne ou un animal."
+      "key": "queue_empty",
+      "label": {
+        "en": "Unmanic queue emptied",
+        "fr": "File Unmanic vidée",
+        "de": "Unmanic-Warteschlange leer",
+        "es": "Cola de Unmanic vacía"
       },
-      "fields": [
-        {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Sensor", "fr": "Détecteur" }
-        },
-        {
-          "key": "target",
-          "type": "multi_select",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" },
-          "options": [
-            { "value": "person", "label": { "en": "Person", "fr": "Personne" } },
-            { "value": "animal", "label": { "en": "Animal", "fr": "Animal" } }
-          ]
-        }
-      ],
+      "description": {
+        "en": "Everything is processed: no task waiting and no worker busy any more.",
+        "fr": "Tout est traité : plus aucune tâche en attente ni aucun worker occupé.",
+        "de": "Alles ist erledigt: Keine Aufgabe wartet und kein Worker arbeitet mehr.",
+        "es": "Todo está procesado: ninguna tarea en espera y ningún worker ocupado."
+      },
+      "fields": [],
       "variables": [
         {
-          "key": "target",
+          "key": "device",
           "type": "string",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" }
+          "label": {
+            "en": "Queue device",
+            "fr": "Appareil de la file",
+            "de": "Gerät der Warteschlange",
+            "es": "Dispositivo de la cola"
+          }
+        },
+        {
+          "key": "completed_today",
+          "type": "number",
+          "label": {
+            "en": "Tasks completed today",
+            "fr": "Tâches terminées aujourd'hui",
+            "de": "Heute abgeschlossene Aufgaben",
+            "es": "Tareas completadas hoy"
+          }
+        },
+        {
+          "key": "failed_today",
+          "type": "number",
+          "label": {
+            "en": "Tasks failed today",
+            "fr": "Tâches en échec aujourd'hui",
+            "de": "Heute fehlgeschlagene Aufgaben",
+            "es": "Tareas fallidas hoy"
+          }
+        }
+      ]
+    },
+    {
+      "key": "task_failed",
+      "label": {
+        "en": "Unmanic task failed",
+        "fr": "Tâche Unmanic en échec",
+        "de": "Unmanic-Aufgabe fehlgeschlagen",
+        "es": "Tarea de Unmanic fallida"
+      },
+      "description": {
+        "en": "A task has just ended in failure.",
+        "fr": "Une tâche vient de se terminer en échec.",
+        "de": "Eine Aufgabe ist gerade fehlgeschlagen.",
+        "es": "Una tarea acaba de terminar con un fallo."
+      },
+      "fields": [],
+      "variables": [
+        {
+          "key": "device",
+          "type": "string",
+          "label": {
+            "en": "Queue device",
+            "fr": "Appareil de la file",
+            "de": "Gerät der Warteschlange",
+            "es": "Dispositivo de la cola"
+          }
+        },
+        {
+          "key": "file",
+          "type": "string",
+          "label": {
+            "en": "File name",
+            "fr": "Nom du fichier",
+            "de": "Dateiname",
+            "es": "Nombre del archivo"
+          }
+        },
+        {
+          "key": "failed_today",
+          "type": "number",
+          "label": {
+            "en": "Tasks failed today",
+            "fr": "Tâches en échec aujourd'hui",
+            "de": "Heute fehlgeschlagene Aufgaben",
+            "es": "Tareas fallidas hoy"
+          }
         }
       ]
     }
   ],
   "scene_actions": [
     {
-      "key": "identify_device",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "description": {
-        "en": "Make a device signal itself (the demo light blinks).",
-        "fr": "Fait se signaler un appareil (la lampe de démonstration clignote)."
+      "key": "pause_workers",
+      "label": {
+        "en": "Pause Unmanic",
+        "fr": "Mettre Unmanic en pause",
+        "de": "Unmanic pausieren",
+        "es": "Pausar Unmanic"
       },
-      "timeout_seconds": 15,
+      "description": {
+        "en": "Pause one worker, or every worker: the tasks in progress stop where they are.",
+        "fr": "Met en pause un worker, ou tous : les tâches en cours s'arrêtent là où elles en sont.",
+        "de": "Pausiert einen Worker oder alle: Laufende Aufgaben halten an, wo sie sind.",
+        "es": "Pausa un worker, o todos: las tareas en curso se detienen donde están."
+      },
+      "timeout_seconds": 30,
       "fields": [
         {
           "key": "device",
           "type": "select",
           "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
+          "label": {
+            "en": "Worker (empty: all workers)",
+            "fr": "Worker (vide : tous les workers)",
+            "de": "Worker (leer: alle Worker)",
+            "es": "Worker (vacío: todos los workers)"
+          }
         }
-      ],
+      ]
+    },
+    {
+      "key": "resume_workers",
+      "label": {
+        "en": "Resume Unmanic",
+        "fr": "Relancer Unmanic",
+        "de": "Unmanic fortsetzen",
+        "es": "Reanudar Unmanic"
+      },
+      "description": {
+        "en": "Resume one worker, or every worker paused from Gladys or Unmanic.",
+        "fr": "Relance un worker, ou tous ceux mis en pause depuis Gladys ou Unmanic.",
+        "de": "Setzt einen Worker fort, oder alle, die in Gladys oder Unmanic pausiert wurden.",
+        "es": "Reanuda un worker, o todos los pausados desde Gladys o Unmanic."
+      },
+      "timeout_seconds": 30,
+      "fields": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Worker (empty: all workers)",
+            "fr": "Worker (vide : tous les workers)",
+            "de": "Worker (leer: alle Worker)",
+            "es": "Worker (vacío: todos los workers)"
+          }
+        }
+      ]
+    },
+    {
+      "key": "read_summary",
+      "label": {
+        "en": "Read the Unmanic summary",
+        "fr": "Lire le résumé Unmanic",
+        "de": "Unmanic-Zusammenfassung lesen",
+        "es": "Leer el resumen de Unmanic"
+      },
+      "description": {
+        "en": "A sentence for a message or a voice announcement: waiting, in progress, completed and failed today.",
+        "fr": "Une phrase pour un message ou une annonce vocale : en attente, en cours, terminées et échecs du jour.",
+        "de": "Ein Satz für eine Nachricht oder Sprachansage: wartend, in Arbeit, heute fertig und fehlgeschlagen.",
+        "es": "Una frase para un mensaje o un aviso de voz: en espera, en curso, completadas y fallidas hoy."
+      },
+      "timeout_seconds": 30,
+      "fields": [],
       "outputs": [
         {
-          "key": "signalled",
-          "type": "boolean",
-          "label": { "en": "Device signalled", "fr": "Appareil signalé" }
+          "key": "summary",
+          "type": "string",
+          "label": {
+            "en": "Summary sentence",
+            "fr": "Phrase de résumé",
+            "de": "Zusammenfassung",
+            "es": "Frase de resumen"
+          }
+        },
+        {
+          "key": "pending",
+          "type": "number",
+          "label": {
+            "en": "Tasks waiting",
+            "fr": "Tâches en attente",
+            "de": "Wartende Aufgaben",
+            "es": "Tareas en espera"
+          }
+        },
+        {
+          "key": "in_progress",
+          "type": "number",
+          "label": {
+            "en": "Tasks in progress",
+            "fr": "Tâches en cours",
+            "de": "Laufende Aufgaben",
+            "es": "Tareas en curso"
+          }
+        },
+        {
+          "key": "completed_today",
+          "type": "number",
+          "label": {
+            "en": "Tasks completed today",
+            "fr": "Tâches terminées aujourd'hui",
+            "de": "Heute abgeschlossene Aufgaben",
+            "es": "Tareas completadas hoy"
+          }
+        },
+        {
+          "key": "failed_today",
+          "type": "number",
+          "label": {
+            "en": "Tasks failed today",
+            "fr": "Tâches en échec aujourd'hui",
+            "de": "Heute fehlgeschlagene Aufgaben",
+            "es": "Tareas fallidas hoy"
+          }
         }
       ]
     }
   ],
   "widgets": [
     {
-      "key": "demo_status",
-      "label": { "en": "Demo status", "fr": "État de la démo" },
-      "description": {
-        "en": "Live temperature and plug power, plug connection and observed location.",
-        "fr": "Température et puissance en direct, connexion de la prise, position observée."
+      "key": "overview",
+      "label": {
+        "en": "Unmanic",
+        "fr": "Unmanic",
+        "de": "Unmanic",
+        "es": "Unmanic"
       },
-      "icon": "activity",
-      "action_timeout_seconds": 15
+      "description": {
+        "en": "Waiting, in progress, completed and failed today, workers, pause and resume.",
+        "fr": "En attente, en cours, terminées et échecs du jour, workers, pause et reprise.",
+        "de": "Wartend, in Arbeit, heute fertig und fehlgeschlagen, Worker, Pause.",
+        "es": "En espera, en curso, completadas y fallidas hoy, workers, pausa y reanudación."
+      },
+      "icon": "film",
+      "action_timeout_seconds": 30,
+      "settings": [
+        {
+          "key": "show_workers",
+          "type": "boolean",
+          "label": {
+            "en": "Show the workers",
+            "fr": "Afficher les workers",
+            "de": "Worker anzeigen",
+            "es": "Mostrar los workers"
+          },
+          "required": false,
+          "default": true
+        },
+        {
+          "key": "show_button",
+          "type": "boolean",
+          "label": {
+            "en": "Show the pause button",
+            "fr": "Afficher le bouton de pause",
+            "de": "Pause-Taste anzeigen",
+            "es": "Mostrar el botón de pausa"
+          },
+          "description": {
+            "en": "Only when pause and resume are allowed in the configuration.",
+            "fr": "Seulement si la pause et la reprise sont autorisées dans la configuration.",
+            "de": "Nur wenn Pause und Fortsetzen in der Konfiguration erlaubt sind.",
+            "es": "Solo si la pausa y la reanudación están permitidas en la configuración."
+          },
+          "required": false,
+          "default": true
+        }
+      ]
     }
   ]
 }

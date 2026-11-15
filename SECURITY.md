@@ -30,6 +30,15 @@ Gladys before reporting a problem.
 
 In scope: the code of this repository and the Docker image it publishes.
 
+The integration talks to one Unmanic server on your local network. Unmanic has
+no authentication of its own; the optional user name and password are those of
+a reverse proxy, stored by Gladys in the integration configuration, sent as an
+HTTP Basic header and never logged. The integration stores under `/data` only
+the address of the server read last, the ids and names of the workers seen, and
+the id of the newest completed task (`unmanic-state.json`). It opens no inbound
+port, and its only commands are pausing and resuming the workers (off by
+default).
+
 Out of scope: Gladys Assistant itself (see its
 [security policy](https://github.com/GladysAssistant/Gladys/security/policy)),
-and the third-party services and devices the integration talks to.
+and Unmanic, whose API is open to anyone on your network.

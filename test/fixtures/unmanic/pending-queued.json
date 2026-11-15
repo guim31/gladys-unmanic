@@ -1,0 +1,24 @@
+{
+  "recordsTotal": 2,
+  "recordsFiltered": 2,
+  "results": [
+    {
+      "id": 2,
+      "abspath": "/library/broken-b.mkv",
+      "priority": 2,
+      "type": "local",
+      "status": "pending",
+      "library_id": 1,
+      "library_name": "Movies"
+    },
+    {
+      "id": 1,
+      "abspath": "/library/sample-a.mkv",
+      "priority": 1,
+      "type": "local",
+      "status": "pending",
+      "library_id": 1,
+      "library_name": "Movies"
+    }
+  ]
+}
