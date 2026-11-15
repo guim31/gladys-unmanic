@@ -223,7 +223,7 @@ function features(type, ids, language, allowControl) {
   }));
 }
 
-const QUEUE_NAME = { en: 'queue', fr: 'file', de: 'Warteschlange', es: 'cola' };
+const QUEUE_NAME = { en: 'queue', fr: "file d'attente", de: 'Warteschlange', es: 'cola' };
 
 /** The server device. */
 export function buildServer(gladys, config) {
