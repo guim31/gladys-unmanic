@@ -397,3 +397,34 @@ test('a bug in the first reading at start does not stop the timer', async (t) =>
   await w.app.ready;
   assert.ok(w.hub.pollTimer, 'the timer is armed');
 });
+
+test('one empty reading while a task changes hands fires no queue_empty', async (t) => {
+  const unmanic = new FakeUnmanic();
+  unmanic.pending = 1;
+  const w = await world(t, { unmanic });
+  unmanic.pending = 0; // out of the queue, the worker not busy yet
+  await w.hub.pollAll();
+  unmanic.setBusy('Default-0');
+  await w.hub.pollAll();
+  assert.equal(events(w, 'queue_empty').length, 0);
+});
+
+test('a worker that disappears while busy shows idle, not its last task', async (t) => {
+  const unmanic = new FakeUnmanic();
+  unmanic.setBusy('Default-1', 'movie.mkv', '40');
+  const w = await world(t, { unmanic });
+  assert.equal(w.fake.lastState(workerFeature(w.gladys, 'progress', 'default-1')), 40);
+  unmanic.removeWorker('Default-1');
+  await w.hub.pollAll();
+  assert.equal(w.fake.lastState(workerFeature(w.gladys, 'active', 'default-1')), 0);
+  assert.equal(w.fake.lastState(workerFeature(w.gladys, 'progress', 'default-1')), 0);
+  assert.equal(w.fake.lastState(workerFeature(w.gladys, 'file', 'default-1')), '—');
+});
+
+test('a blank 200 on a reading is an error, not an empty server', async (t) => {
+  const w = await world(t);
+  w.unmanic.failNext = { status: 200, headers: { 'content-type': 'application/json' }, body: '' };
+  await w.hub.pollAll();
+  assert.equal(w.hub.error.kind, 'not_unmanic');
+  assert.ok(w.fake.discoveredDevices.some((d) => d.external_id === workerDevice(w.gladys)));
+});

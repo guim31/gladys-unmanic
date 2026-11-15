@@ -64,6 +64,5 @@ export function parseHistory(answer, midnight) {
     rows,
     completedToday: today.filter((row) => row.success).length,
     failedToday: today.filter((row) => !row.success).length,
-    failedTotal: count(answer?.failedCount),
   };
 }

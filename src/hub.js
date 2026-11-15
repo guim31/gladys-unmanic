@@ -109,6 +109,8 @@ export class UnmanicHub {
     this.polling = null;
     this.stopped = false;
     this.view = null;
+    /** Consecutive readings with nothing waiting nor in progress. */
+    this.emptyReadings = 0;
     /** Problems already logged, by key: repeats go to debug. */
     this.warned = new Set();
   }
@@ -435,6 +437,17 @@ export class UnmanicHub {
 
     const inProgress = next.workers.filter((worker) => worker.busy).length;
     const waiting = next.pending === null ? null : next.pending + inProgress;
+    // Unmanic hands a task to a worker in two steps (out of the queue, then
+    // the worker busy): one empty reading may fall in between. Two in a row.
+    this.emptyReadings = waiting === 0 ? this.emptyReadings + 1 : 0;
+    const busy =
+      waiting === null
+        ? previous.busy
+        : waiting > 0
+          ? true
+          : this.emptyReadings >= 2
+            ? false
+            : previous.busy;
     this.server = {
       reachable: true,
       version: next.version,
@@ -444,7 +457,7 @@ export class UnmanicHub {
       completedToday: next.history.completedToday,
       failedToday: next.history.failedToday,
       allPaused: next.workers.length > 0 && next.workers.every((worker) => worker.paused),
-      busy: waiting === null ? previous.busy : waiting > 0,
+      busy,
     };
 
     if (previous.busy === true && this.server.busy === false) {
@@ -487,7 +500,8 @@ export class UnmanicHub {
   async announceFailures(rows) {
     const newest = rows.reduce((max, row) => Math.max(max, row.id), 0);
     const cursor = this.saved.lastTaskId;
-    if (cursor === newest) {
+    // An empty history keeps the cursor: the next task tells a clear apart.
+    if (cursor === newest || (rows.length === 0 && cursor !== null)) {
       return;
     }
     this.saved.lastTaskId = newest;
@@ -700,7 +714,12 @@ export class UnmanicHub {
       throw new CommandError(pick(ERROR_TEXT[err.kind], this.config.language));
     }
     logger.info(`Unmanic: ${what} ${paused ? 'paused' : 'resumed'}`);
-    await this.refresh();
+    try {
+      await this.refresh();
+    } catch (err) {
+      // The command went through: a failing follow-up read does not undo it.
+      this.problem('refresh', 'Reading after the command failed', err, 'error');
+    }
     this.gladys.requestWidgetRefresh(WIDGET_KEY);
     return target;
   }

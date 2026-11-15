@@ -182,16 +182,21 @@ const FEATURES = {
     { key: K.FAILED_TODAY, definition: 'counter', value: (s) => s.failedToday },
   ],
   [DEVICE_TYPES.WORKER]: [
-    { key: K.ACTIVE, definition: 'binary', value: (w) => (w.online ? bit(w.busy) : null) },
+    // A worker gone (worker group shrunk) shows idle, not its last task; its
+    // pause state is unknown. Nothing before the first answer (`online` unset).
+    { key: K.ACTIVE, definition: 'binary', value: (w) => known(w, () => bit(w.busy), 0) },
     { key: K.PAUSED, definition: 'pause', value: (w) => (w.online ? bit(w.paused) : null) },
-    { key: K.PROGRESS, definition: 'progress', value: (w) => (w.online ? w.progress : null) },
-    {
-      key: K.FILE,
-      definition: 'text',
-      value: (w) => (w.online ? w.file || NO_FILE : null),
-    },
+    { key: K.PROGRESS, definition: 'progress', value: (w) => known(w, () => w.progress, 0) },
+    { key: K.FILE, definition: 'text', value: (w) => known(w, () => w.file || NO_FILE, NO_FILE) },
   ],
 };
+
+function known(worker, online, offline) {
+  if (worker.online === undefined) {
+    return null;
+  }
+  return worker.online ? online() : offline;
+}
 
 function bit(value) {
   if (value === null || value === undefined) {

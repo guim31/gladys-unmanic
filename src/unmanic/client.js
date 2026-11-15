@@ -129,18 +129,31 @@ export class UnmanicClient {
     return answer.version;
   }
 
-  workers() {
-    return this.call('workers/status');
+  /** Unmanic answers an unknown route with an empty 200: check the shape of each answer. */
+  async expect(path, answer, valid) {
+    if (!answer || typeof answer !== 'object' || !valid(answer)) {
+      throw new UnmanicError(ERROR_KINDS.NOT_UNMANIC, `Unexpected answer from /${path}`);
+    }
+    return answer;
+  }
+
+  async workers() {
+    const answer = await this.call('workers/status');
+    return this.expect('workers/status', answer, (a) => Array.isArray(a.workers_status));
   }
 
   /** The queue: only the count matters (`recordsFiltered`: tasks not started yet). */
-  pending() {
-    return this.call('pending/tasks', { method: 'POST', json: { start: 0, length: 1 } });
+  async pending() {
+    const answer = await this.call('pending/tasks', {
+      method: 'POST',
+      json: { start: 0, length: 1 },
+    });
+    return this.expect('pending/tasks', answer, (a) => a.recordsFiltered !== undefined);
   }
 
   /** The latest completed tasks, newest first. */
-  history() {
-    return this.call('history/tasks', {
+  async history() {
+    const answer = await this.call('history/tasks', {
       method: 'POST',
       json: {
         start: 0,
@@ -149,6 +162,7 @@ export class UnmanicClient {
         order_direction: 'desc',
       },
     });
+    return this.expect('history/tasks', answer, (a) => Array.isArray(a.results));
   }
 
   setWorkerPaused(workerId, paused) {

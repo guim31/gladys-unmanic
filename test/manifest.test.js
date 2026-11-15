@@ -109,6 +109,7 @@ test('the scene triggers are the ones the hub fires, with their filters and vari
   world.unmanic.pending = 0;
   world.unmanic.complete('broken-b.mkv', world.clock.now(), false);
   await world.hub.pollAll();
+  await world.hub.pollAll(); // queue_empty needs two empty readings
   const fired = new Map(world.fake.sceneEvents.map((event) => [event.key, event.data]));
   for (const trigger of manifest.scene_triggers) {
     const data = fired.get(trigger.key);
