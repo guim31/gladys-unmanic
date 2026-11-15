@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-15
+
 ### Added
 
 - The Unmanic server in Gladys: online, version, and a switch that pauses
@@ -24,3 +26,6 @@ the notes of the version's GitHub Release.
   the pause button.
 - Optional Basic auth for an Unmanic behind a reverse proxy.
 - Documentation in English, French, German and Spanish.
+
+[Unreleased]: https://github.com/guim31/gladys-unmanic/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/guim31/gladys-unmanic/releases/tag/v1.0.0
