@@ -1,0 +1,46 @@
+{
+  "workers_status": [
+    {
+      "id": "Default-0",
+      "name": "Default-Worker-1",
+      "idle": true,
+      "paused": false,
+      "start_time": "1794734898.1941676",
+      "current_file": "",
+      "current_task": null,
+      "current_command": "",
+      "worker_log_tail": [],
+      "runners_info": {},
+      "subprocess": {
+        "pid": "None",
+        "percent": "0",
+        "elapsed": 0,
+        "cpu_percent": "0",
+        "mem_percent": "0",
+        "rss_bytes": "0",
+        "vms_bytes": "0"
+      }
+    },
+    {
+      "id": "Default-1",
+      "name": "Default-Worker-2",
+      "idle": true,
+      "paused": false,
+      "start_time": null,
+      "current_file": "",
+      "current_task": null,
+      "current_command": "",
+      "worker_log_tail": [],
+      "runners_info": {},
+      "subprocess": {
+        "pid": "None",
+        "percent": "0",
+        "elapsed": 0,
+        "cpu_percent": "0",
+        "mem_percent": "0",
+        "rss_bytes": "0",
+        "vms_bytes": "0"
+      }
+    }
+  ]
+}

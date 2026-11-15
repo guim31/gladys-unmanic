@@ -1,0 +1,32 @@
+{
+  "recordsTotal": 5,
+  "recordsFiltered": 5,
+  "results": [
+    {
+      "id": 5,
+      "task_label": "broken-b.mkv",
+      "task_success": false,
+      "start_time": 1794735007.889539,
+      "finish_time": 1794735008.178702,
+      "has_metadata": false
+    },
+    {
+      "id": 4,
+      "task_label": "sample-a.mkv",
+      "task_success": true,
+      "start_time": 1794734957.342952,
+      "finish_time": 1794734957.381028,
+      "has_metadata": false
+    },
+    {
+      "id": 3,
+      "task_label": "broken-b.mkv",
+      "task_success": true,
+      "start_time": 1794734954.7769,
+      "finish_time": 1794734954.841812,
+      "has_metadata": false
+    }
+  ],
+  "successCount": 4,
+  "failedCount": 1
+}

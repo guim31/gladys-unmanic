@@ -32,15 +32,20 @@ pushing.
 
 ```
 index.js                          SDK wiring only: handlers registered before connect()
-src/devices/index.js              registry of the device blueprints + dispatch helpers
-src/devices/<type>.js             one device type per file (buildDevice, onPoll, onSetValue...)
-src/scenes.js                     scene action handlers (manifest `scene_actions`)
-src/widgets.js                    dashboard widget handlers (manifest `widgets`)
+src/app.js                        registers every handler on the hub (tests drive the same wiring)
 src/config.js                     DEFAULT_CONFIG (mirrors the manifest defaults) + normalization
-src/weather.js                    example driver (Open-Meteo)
+src/unmanic/http.js               the one network function (node:http/https), the test seam
+src/unmanic/client.js             Unmanic API v2 calls, error kinds (never logs the password)
+src/unmanic/model.js              parsers of the answers (real Unmanic 0.4.1 shapes)
+src/devices.js                    server, queue and worker devices, feature names in 4 languages
+src/hub.js                        timer, states, scene events, commands, connection status
+src/scenes.js                     scene action handlers (manifest `scene_actions`)
+src/widgets.js                    the `overview` widget (manifest `widgets`)
+src/texts.js                      messages in 4 languages
+src/store.js                      /data/unmanic-state.json (workers seen, newest task id)
 gladys-assistant-integration.json manifest: name, config_schema, actions, image...
-docs/en.md, docs/fr.md            user documentation, re-hosted by Gladys (mandatory)
-test/                             node --test, against the SDK's fake Gladys (integration-sdk/testing)
+docs/{en,fr,de,es}.md             user documentation, re-hosted by Gladys (mandatory)
+test/                             node --test, against the SDK's fake Gladys and test/helpers/fakeUnmanic.js
 .github/scripts/release.mjs       release helpers (manifest bump, changelog), tested in test/
 ```
 
@@ -70,8 +75,10 @@ test/                             node --test, against the SDK's fake Gladys (in
   `type: "provider"`: 5.1.0). `test/manifest.test.js` ties the manifest to the
   code (defaults, action, scene and widget handlers): change both sides
   together.
-- **User-facing text** is bilingual (English and French): action messages,
-  manifest texts, and `docs/en.md` / `docs/fr.md`, kept in sync.
+- **User-facing text** is in four languages (English, French, German with
+  "du", Spanish with "usted"): action messages, manifest texts, widget texts,
+  feature names and `docs/{en,fr,de,es}.md`, kept in sync
+  (`test/i18n.test.js`).
 - **Style.** Prettier formats, ESLint catches mistakes. Comments explain why,
   in English. Tests never touch the network.
 
@@ -251,3 +258,25 @@ long, et sur un « Sie »/« Ihr… » de politesse en allemand. Le store exige 
 - Docs `en`, `fr`, `de`, `es` avec les mêmes sections.
 - Chauffe, ouverture, sécurité : ne rien rendre pilotable « comme un thermostat » ou par un assistant
   vocal quand une erreur serait dangereuse (leçon d'OctoPrint).
+
+## Unmanic (notes de cette intégration)
+
+Vérifié sur un vrai serveur **Unmanic 0.4.1** (image `josh5/unmanic`) le 15/11/2026, avec de vraies tâches (plugin
+`video_transcoder` modifié pour un ffmpeg en temps réel), un échec et des workers en pause. Réponses réelles dans
+`test/fixtures/unmanic/`.
+
+- **Aucune authentification** dans Unmanic : l'API est ouverte sur le réseau. Les champs identifiant et mot de passe ne
+  servent qu'à un proxy inverse en Basic auth.
+- Un Unmanic neuf n'a **aucun worker** tant qu'un groupe de workers n'en compte pas (`settings/worker_group/write`, avec
+  `id: null` pour en créer un). Les ids des workers valent `<groupe>-<rang>` (`Default-0`) : identité des appareils.
+- `workers/status` : `idle`, `paused`, `current_file` (nom seul), `subprocess.percent` **en chaîne**, `"0"` quand le
+  plugin ne fournit pas d'analyseur de progression. Un worker en pause suspend sa tâche (elle reprend au même point).
+- `pending/tasks` : `recordsFiltered` = tâches en attente ; `recordsTotal` compte aussi celles en cours.
+- `history/tasks` : `task_success`, `finish_time` en secondes. **Le filtre `after`/`before` est ignoré en 0.4.1** (et un
+  nombre est refusé en 400) : le hub compte les tâches du jour sur les 250 dernières lignes, depuis minuit local (`TZ`).
+  Les ids sont croissants ; après un vidage de l'historique ils peuvent repartir de 1 (le curseur se recale).
+- Une route inconnue répond **200 avec un corps vide** (pas de 404) ; une erreur répond `{ error, messages, traceback }`
+  en 400/500 : ne garder que `error`.
+- Commandes : `workers/worker/pause|resume` (`{ worker_id }`, 500 « Failed to pause worker » si l'id est inconnu) et
+  `workers/worker/pause/all|resume/all`.
+- Une tâche dont le déplacement final échoue (droits sur la bibliothèque) reste notée `task_success: true`.
