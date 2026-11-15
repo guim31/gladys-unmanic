@@ -148,7 +148,7 @@ export class UnmanicClient {
       method: 'POST',
       json: { start: 0, length: 1 },
     });
-    return this.expect('pending/tasks', answer, (a) => a.recordsFiltered !== undefined);
+    return this.expect('pending/tasks', answer, (a) => a.recordsFiltered != null);
   }
 
   /** The latest completed tasks, newest first. */
